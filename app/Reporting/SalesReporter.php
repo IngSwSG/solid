@@ -1,36 +1,25 @@
 <?php namespace App\Reporting;
 
-use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Repositories\SalesRepository;
+
 
 class SalesReporter
 {
-    public function between($startDate, $endDate)
+    public function __construct(protected SalesRepository $repo) {
+        $this->repo = $repo;
+    }
+    
+    public function between($startDate, $endDate, SalesOutputInterface $formatter)
     {
-        // Check if the user is authenticated
-       // if(!Auth::check()) throw new Exception("Authentication required");
 
-        // get sales from the database
-        $sales = $this->queryDBForSalesBetween($startDate, $endDate);
-
-        // format the sales data
-        return $this->format($sales);
+        $sales = $this->repo->between($startDate, $endDate);
+        
+        return $formatter->output($sales);
 
     }
 
-    protected function queryDBForSalesBetween($startDate, $endDate)
-    {
-   
-        return DB::table('sales')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->sum('amount');
-    }
 
-    protected function format($sales)
-    {
-        // Format the sales data
-        return "<h1>Sales: $sales</h1>";
-    }
+
+
 }
 
